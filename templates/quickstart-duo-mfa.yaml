@@ -32,6 +32,8 @@ Metadata:
           - RadiusProxyServerCount
           - RadiusPortNumber
           - DuoFailMode
+          - InstanceType
+          - KeyName
 
       - Label:
             default: AWS Quick Start configuration settings
@@ -140,6 +142,18 @@ Parameters:
     AllowedPattern: ^[0-9a-zA-Z-/]*$
     Default: quickstart-duo-mfa/
     Type: String
+    
+  InstanceType:
+    Type: String
+    Description: Instance type to use as a proxy servers for DUO.
+    AllowedValues:
+      - "t2.micro"
+      - "t2.nano"
+    Default: "t2.nano"
+  
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: Key Pair to use to connect to the proxy servers for DUO.
 
 
 #-----------------------------------------------------------
@@ -464,10 +478,11 @@ Resources:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
       ImageId: !Ref LatestAmiId
-      InstanceType: t2.micro
+      InstanceType: !Ref InstanceType
       IamInstanceProfile: !Ref InstanceProfile
       SecurityGroups:
       - !Ref DuoRadiusProxySecurityGroup
+      KeyName: !Ref KeyName
 
   #-------------------------------------------------
   # Auto scaling group for RADIUS proxies
@@ -1017,7 +1032,7 @@ Resources:
 
   #--------------------------------------------------
   # Deployment helpers
-  #-------------------------------------------------- 
+  #--------------------------------------------------
   LambdaZipsBucket:
     Type: AWS::S3::Bucket
 
